@@ -297,16 +297,19 @@ export const telegramAuth = async (
       return;
     }
 
-    const { hash, ...rest } = data;
-    const checkString = Object.keys(rest)
+    const { hash, inviteCode: _inviteCode, ...telegramFields } = data as TelegramAuthPayload & { inviteCode?: string };
+    // Только поля от Telegram участвуют в проверке hash (inviteCode — наш, не от виджета)
+    const checkString = Object.keys(telegramFields)
       .sort()
-      .map((k) => `${k}=${(rest as Record<string, unknown>)[k]}`)
+      .map((k) => `${k}=${(telegramFields as Record<string, unknown>)[k]}`)
       .join('\n');
 
     const secret = crypto.createHash('sha256').update(botToken).digest();
     const computedHash = crypto.createHmac('sha256', secret).update(checkString).digest('hex');
 
-    if (computedHash !== hash) {
+    const computedBuf = Buffer.from(computedHash, 'hex');
+    const receivedBuf = Buffer.from(hash, 'hex');
+    if (computedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(computedBuf, receivedBuf)) {
       res.status(401).json({ error: 'Недействительные данные Telegram' });
       return;
     }
@@ -324,7 +327,7 @@ export const telegramAuth = async (
     if (!user) {
       let role = UserRole.SPECIALIST;
       let inviteDoc: InstanceType<typeof Invite> | null = null;
-      const code = (data as { inviteCode?: string }).inviteCode?.toUpperCase().trim();
+      const code = _inviteCode?.toUpperCase().trim();
 
       if (code) {
         inviteDoc = await Invite.findOne({ code });
