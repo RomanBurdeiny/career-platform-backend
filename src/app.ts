@@ -12,6 +12,7 @@ import careerRoutes from './routes/career';
 import usersRoutes from './routes/users';
 import analyticsRoutes from './routes/analytics';
 import adminAnalyticsRoutes from './routes/adminAnalytics';
+import adminRecommendationsRoutes from './routes/adminRecommendations';
 import { errorHandler } from './middleware/errorHandler';
 import { generalRateLimiter } from './middleware/rateLimiter';
 
@@ -73,6 +74,7 @@ app.use('/api/career', careerRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
+app.use('/api/admin/recommendations', adminRecommendationsRoutes);
 
 // Обработка 404 для несуществующих роутов
 app.use((req, res) => {

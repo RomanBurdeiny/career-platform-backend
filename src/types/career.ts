@@ -18,6 +18,7 @@ export interface ICareerScenario extends Document {
   description: string;
   actions: CareerAction[];
   createdBy: Types.ObjectId;
+  sortOrder?: number;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -33,6 +34,7 @@ export type CreateCareerScenarioBody = {
 };
 
 export type UpdateCareerScenarioBody = Partial<CreateCareerScenarioBody> & {
+  sortOrder?: number;
   isActive?: boolean;
 };
 
@@ -40,5 +42,6 @@ export type UpdateCareerScenarioBody = Partial<CreateCareerScenarioBody> & {
 export type CareerScenarioFilters = {
   direction?: Direction;
   level?: Level;
+  sortOrder?: number;
   isActive?: boolean;
 };

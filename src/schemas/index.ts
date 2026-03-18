@@ -4,6 +4,7 @@ export * from './auth.schema';
 export * from './profile.schema';
 export * from './job.schema';
 export * from './career.schema';
+export * from './adminRecommendations.schema';
 export * from './users.schema';
 export * from './invite.schema';
 export * from './analytics.schema';

@@ -73,6 +73,12 @@ const careerScenarioSchema = new Schema<ICareerScenario>({
     ref: 'User',
     required: [true, 'Создатель обязателен'],
   },
+  sortOrder: {
+    type: Number,
+    default: 0,
+    min: [0, 'sortOrder не может быть отрицательным'],
+    index: true,
+  },
   isActive: {
     type: Boolean,
     default: true,
@@ -84,6 +90,7 @@ const careerScenarioSchema = new Schema<ICareerScenario>({
 // Индексы для оптимизации поиска рекомендаций
 careerScenarioSchema.index({ direction: 1, level: 1 });
 careerScenarioSchema.index({ isActive: 1 });
+careerScenarioSchema.index({ sortOrder: 1 });
 
 const CareerScenario: Model<ICareerScenario> = mongoose.model<ICareerScenario>('CareerScenario', careerScenarioSchema);
 

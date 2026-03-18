@@ -28,11 +28,6 @@ export const getRecommendations = async (req: AuthRequest, res: Response): Promi
       isActive: true,
     }).select('-createdBy -__v');
 
-    if (scenarios.length === 0) {
-      res.status(404).json({ error: 'Рекомендации не найдены для вашего профиля' });
-      return;
-    }
-
     res.status(200).json({ 
       profile: {
         direction: profile.direction,
