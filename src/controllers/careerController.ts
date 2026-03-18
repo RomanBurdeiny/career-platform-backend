@@ -45,7 +45,17 @@ export const getRecommendations = async (req: AuthRequest, res: Response): Promi
 export const createScenario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId;
-    const { direction, level, title, description, actions }: any = req.body;
+    const {
+      direction,
+      level,
+      title,
+      description,
+      actions,
+      careerBranches,
+      transitionSkills,
+      sortOrder,
+      isActive,
+    }: any = req.body;
 
     const scenario = await CareerScenario.create({
       direction,
@@ -53,6 +63,10 @@ export const createScenario = async (req: AuthRequest, res: Response): Promise<v
       title,
       description,
       actions,
+      careerBranches: careerBranches ?? [],
+      transitionSkills: transitionSkills ?? [],
+      sortOrder: sortOrder ?? 0,
+      isActive: isActive ?? true,
       createdBy: userId,
     });
 
@@ -74,7 +88,7 @@ export const getScenarios = async (req: AuthRequest, res: Response): Promise<voi
 
     const scenarios = await CareerScenario.find(filter)
       .populate('createdBy', 'email role')
-      .sort({ createdAt: -1 });
+      .sort({ sortOrder: 1, createdAt: -1 });
 
     res.status(200).json(scenarios);
   } catch (error: unknown) {

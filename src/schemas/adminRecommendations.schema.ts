@@ -12,8 +12,13 @@ const careerActionSchema = z.object({
   }),
   title: z.string().min(3, 'Название действия должно содержать минимум 3 символа'),
   description: z.string().min(10, 'Описание действия должно содержать минимум 10 символов'),
-  link: z.string().url('Некорректный URL').optional(),
+  link: z.union([z.literal(''), z.string().url('Некорректный URL')]).optional(),
 });
+
+const stringListSchema = z
+  .array(z.string().trim().min(1, 'Пустое значение недопустимо'))
+  .max(50, 'Слишком много элементов')
+  .optional();
 
 export const adminRecommendationIdParamsSchema = z.object({
   params: z.object({
@@ -32,6 +37,8 @@ export const createAdminRecommendationSchema = z.object({
     title: z.string().min(5, 'Заголовок должен содержать минимум 5 символов'),
     description: z.string().min(20, 'Описание должно содержать минимум 20 символов'),
     actions: z.array(careerActionSchema).min(1, 'Необходимо добавить хотя бы одно действие'),
+    careerBranches: stringListSchema,
+    transitionSkills: stringListSchema,
     sortOrder: z.number().int().min(0, 'sortOrder не может быть отрицательным').optional(),
     isActive: z.boolean().optional(),
   }),
@@ -47,6 +54,8 @@ export const updateAdminRecommendationSchema = z.object({
     title: z.string().min(5, 'Заголовок должен содержать минимум 5 символов').optional(),
     description: z.string().min(20, 'Описание должно содержать минимум 20 символов').optional(),
     actions: z.array(careerActionSchema).min(1, 'Необходимо добавить хотя бы одно действие').optional(),
+    careerBranches: stringListSchema,
+    transitionSkills: stringListSchema,
     sortOrder: z.number().int().min(0, 'sortOrder не может быть отрицательным').optional(),
     isActive: z.boolean().optional(),
   }),

@@ -54,13 +54,25 @@ export const createRecommendation = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.userId;
-    const { direction, level, title, description, actions, isActive, sortOrder } =
+    const {
+      direction,
+      level,
+      title,
+      description,
+      actions,
+      careerBranches,
+      transitionSkills,
+      isActive,
+      sortOrder,
+    } =
       req.body as {
         direction: string;
         level: string;
         title: string;
         description: string;
         actions: CareerAction[];
+        careerBranches?: string[];
+        transitionSkills?: string[];
         isActive?: boolean;
         sortOrder?: number;
       };
@@ -71,6 +83,8 @@ export const createRecommendation = async (
       title,
       description,
       actions,
+      careerBranches: careerBranches ?? [],
+      transitionSkills: transitionSkills ?? [],
       createdBy: userId,
       isActive: isActive ?? true,
       sortOrder: sortOrder ?? 0,

@@ -68,6 +68,14 @@ const careerScenarioSchema = new Schema<ICareerScenario>({
       message: 'Необходимо добавить хотя бы одно действие',
     },
   },
+  careerBranches: {
+    type: [String],
+    default: [],
+  },
+  transitionSkills: {
+    type: [String],
+    default: [],
+  },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'User',

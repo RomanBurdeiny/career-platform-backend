@@ -18,6 +18,8 @@ export interface ICareerScenario extends Document {
   description: string;
   actions: CareerAction[];
   createdBy: Types.ObjectId;
+  careerBranches?: string[];
+  transitionSkills?: string[];
   sortOrder?: number;
   isActive?: boolean;
   createdAt?: Date;
@@ -31,11 +33,14 @@ export type CreateCareerScenarioBody = {
   title: string;
   description: string;
   actions: CareerAction[];
+  careerBranches?: string[];
+  transitionSkills?: string[];
+  sortOrder?: number;
+  isActive?: boolean;
 };
 
 export type UpdateCareerScenarioBody = Partial<CreateCareerScenarioBody> & {
-  sortOrder?: number;
-  isActive?: boolean;
+  // keep explicit fields for readability
 };
 
 // Фильтры для поиска карьерных сценариев
