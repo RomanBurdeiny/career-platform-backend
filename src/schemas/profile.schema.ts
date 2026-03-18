@@ -14,9 +14,12 @@ export const createProfileSchema = z.object({
       .min(1, 'Имя обязательно')
       .trim(),
     avatar: z
-      .string()
-      .url('Неверный формат URL')
-      .optional(),
+      .union([
+        z.string().url('Неверный формат URL'),
+        z.string().regex(/^\/avatars\/.+/, 'Неверный формат пути аватара'),
+      ])
+      .optional()
+      .nullable(),
     direction: z.enum(directionValues, {
       message: `Неверное направление. Допустимые значения: ${directionValues.join(', ')}`,
     }),
@@ -47,8 +50,10 @@ export const updateProfileSchema = z.object({
       .trim()
       .optional(),
     avatar: z
-      .string()
-      .url('Неверный формат URL')
+      .union([
+        z.string().url('Неверный формат URL'),
+        z.string().regex(/^\/avatars\/.+/, 'Неверный формат пути аватара'),
+      ])
       .optional()
       .nullable(),
     direction: z.enum(directionValues, {
@@ -80,8 +85,10 @@ export const updateProfileSchema = z.object({
 export const updateAvatarSchema = z.object({
   body: z.object({
     avatar: z
-      .string()
-      .url('Неверный формат URL'),
+      .union([
+        z.string().url('Неверный формат URL'),
+        z.string().regex(/^\/avatars\/.+/, 'Неверный формат пути аватара'),
+      ]),
   }),
 });
 
