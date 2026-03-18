@@ -252,7 +252,14 @@ export const getAvatarFile = async (req: AuthRequest, res: Response): Promise<vo
 
     stream.pipe(res);
   } catch (error: unknown) {
-    res.status(500).json({ error: getErrorMessage(error) });
+    const msg = getErrorMessage(error);
+    const isNotFound =
+      msg.includes('404') ||
+      msg.toLowerCase().includes('not found') ||
+      msg.toLowerCase().includes('не найден');
+    res.status(isNotFound ? 404 : 500).json({
+      error: isNotFound ? 'Аватарка не найдена' : msg,
+    });
   }
 };
 
