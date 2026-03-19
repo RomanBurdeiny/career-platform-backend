@@ -53,6 +53,7 @@ export type LoginBody = {
 /** Тело запроса для входа через Google (id_token от Google Sign-In) */
 export type GoogleAuthBody = {
   idToken: string;
+  inviteCode?: string;
 };
 
 /** Данные от Telegram Login Widget (после проверки hash на бэкенде) */

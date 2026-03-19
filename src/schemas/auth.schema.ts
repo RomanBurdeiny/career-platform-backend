@@ -20,9 +20,11 @@ export const loginSchema = z.object({
 });
 
 // Вход через Google: id_token от Google Sign-In
+// inviteCode опционален — при регистрации по invite применяется роль из приглашения
 export const googleAuthSchema = z.object({
   body: z.object({
     idToken: z.string().min(1, 'idToken обязателен'),
+    inviteCode: z.string().max(32).trim().optional(),
   }),
 });
 

@@ -237,7 +237,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 // Вход через Google (id_token от Google Sign-In)
 export const googleAuth = async (req: Request<{}, {}, GoogleAuthBody>, res: Response): Promise<void> => {
   try {
-    const { idToken } = req.body;
+    const { idToken, inviteCode } = req.body;
     const clientId = process.env.GOOGLE_CLIENT_ID;
 
     if (!clientId) {
@@ -259,12 +259,34 @@ export const googleAuth = async (req: Request<{}, {}, GoogleAuthBody>, res: Resp
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
     if (!user) {
+      let role = UserRole.SPECIALIST;
+      let inviteDoc: InstanceType<typeof Invite> | null = null;
+      const code = inviteCode?.toUpperCase().trim();
+
+      if (code) {
+        inviteDoc = await Invite.findOne({ code });
+        if (!inviteDoc || !isInviteValid(inviteDoc)) {
+          res.status(400).json({ error: 'Приглашение недействительно или истекло' });
+          return;
+        }
+        role = inviteDoc.role as UserRole;
+      }
+
       user = await User.create({
         email,
         authProvider: 'google',
         googleId,
-        role: UserRole.SPECIALIST,
+        role,
       });
+
+      if (inviteDoc) {
+        await InviteUsage.create({
+          inviteId: inviteDoc._id as import('mongoose').Types.ObjectId,
+          userId: user._id as import('mongoose').Types.ObjectId,
+          email: user.email!,
+        });
+        await Invite.findByIdAndUpdate(inviteDoc._id, { $inc: { usedCount: 1 } });
+      }
     } else if (!user.googleId) {
       user.googleId = googleId;
       user.authProvider = 'google';
