@@ -237,8 +237,32 @@ async function seed() {
         sortOrder: 3,
         isActive: true,
       },
+      {
+        direction: Direction.HORECA,
+        level: Level.JUNIOR,
+        title: 'Карьера в HoReCa: с нуля до менеджера',
+        description:
+          'План входа в индустрию гостеприимства: от официанта до управляющего рестораном.',
+        actions: [
+          {
+            type: ActionType.LECTURE,
+            title: 'Основы сервиса и этикета',
+            description: 'Обучающий курс по стандартам обслуживания в ресторанах.',
+          },
+          {
+            type: ActionType.COMMUNITY,
+            title: 'Сообщество HoReCa',
+            description: 'Присоединяйтесь к профессиональным чатам и мероприятиям отрасли.',
+          },
+        ],
+        careerBranches: ['Ресторан', 'Отель', 'Кейтеринг'],
+        transitionSkills: ['Сервис', 'Управление персоналом', 'Закупки'],
+        createdBy: userId,
+        sortOrder: 4,
+        isActive: true,
+      },
     ]);
-    console.log('Создано 4 карьерных сценария');
+    console.log('Создано 5 карьерных сценариев');
   } else {
     console.log(`Карьерные сценарии уже есть (${scenariosCount} шт.)`);
   }
