@@ -41,6 +41,39 @@ export const getRecommendations = async (req: AuthRequest, res: Response): Promi
   }
 };
 
+// Получение одного сценария по ID (для просмотра, только если подходит по профилю)
+export const getRecommendationById = async (req: AuthRequest<{ id: string }>, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(401).json({ error: 'Необходима авторизация' });
+      return;
+    }
+
+    const profile = await Profile.findOne({ userId });
+    if (!profile) {
+      res.status(400).json({ error: 'Профиль пользователя не найден' });
+      return;
+    }
+
+    const scenario = await CareerScenario.findOne({
+      _id: req.params.id,
+      direction: profile.direction,
+      level: profile.level,
+      isActive: true,
+    }).select('-createdBy -__v');
+
+    if (!scenario) {
+      res.status(404).json({ error: 'Рекомендация не найдена' });
+      return;
+    }
+
+    res.status(200).json(scenario);
+  } catch (error: unknown) {
+    res.status(500).json({ error: getErrorMessage(error) });
+  }
+};
+
 // [ADMIN] Создание нового карьерного сценария
 export const createScenario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

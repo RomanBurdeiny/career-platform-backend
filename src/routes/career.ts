@@ -14,6 +14,13 @@ router.use(authMiddleware);
 // Получение персональных рекомендаций (для всех авторизованных пользователей)
 router.get('/recommendations', careerController.getRecommendations);
 
+// Получение одной рекомендации по ID (для просмотра)
+router.get(
+  '/recommendations/:id',
+  validateRequest(scenarioIdParamsSchema),
+  careerController.getRecommendationById
+);
+
 // CRUD для карьерных сценариев (только для ADMIN)
 router.post(
   '/scenarios',
