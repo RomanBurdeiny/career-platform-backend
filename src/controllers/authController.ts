@@ -22,24 +22,64 @@ import {
 } from '../utils/tokenService';
 
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
+const IS_PROD = process.env.NODE_ENV === 'production';
+// Security: in production never accept/return refreshToken via JSON/body.
+// In development you can enable explicit fallback when cookies are inconvenient.
+const ALLOW_REFRESH_TOKEN_BODY = !IS_PROD && process.env.ALLOW_REFRESH_TOKEN_BODY === 'true';
+const ALLOW_REFRESH_TOKEN_JSON = !IS_PROD && process.env.ALLOW_REFRESH_TOKEN_JSON === 'true';
+
+type RefreshCookieSameSite = 'strict' | 'lax' | 'none';
+
+function parseRefreshCookieSameSite(
+  value: string | undefined
+): RefreshCookieSameSite | undefined {
+  if (!value) return undefined;
+  const v = value.trim().toLowerCase();
+  if (v === 'strict' || v === 'lax' || v === 'none') return v;
+  return undefined;
+}
+
+/**
+ * Настройки httpOnly cookie для refresh.
+ * В production по умолчанию SameSite=None + Secure: иначе при SPA на другом origin
+ * (например Vercel + API на Railway) браузер не отправляет cookie на POST /auth/refresh,
+ * сессия «ломается» после истечения access token — падают и админские запросы (аналитика и т.д.).
+ */
+function getRefreshTokenCookieOptions(): {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: RefreshCookieSameSite;
+  maxAge: number;
+  path: string;
+} {
+  const fromEnv = parseRefreshCookieSameSite(
+    process.env.REFRESH_TOKEN_COOKIE_SAMESITE
+  );
+  const sameSite: RefreshCookieSameSite =
+    fromEnv ?? (IS_PROD ? 'none' : 'strict');
+  const secure = IS_PROD || sameSite === 'none';
+  return {
+    httpOnly: true,
+    secure,
+    sameSite,
+    maxAge: COOKIE_MAX_AGE_MS,
+    path: '/',
+  };
+}
 
 /** Выставляет refresh token в cookie и возвращает accessToken + user для JSON-ответа */
 async function issueAuthResponse(
   res: Response,
   user: InstanceType<typeof User>
-): Promise<{ accessToken: string; user: { id: typeof user._id; email: string; role: UserRole } }> {
+): Promise<{ accessToken: string; refreshToken?: string; user: { id: typeof user._id; email: string; role: UserRole } }> {
   const userId = user._id.toString();
   const email = user.email ?? '';
   const accessToken = generateAccessToken({ userId, email, role: user.role });
   const refreshToken = await generateRefreshToken(userId);
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: COOKIE_MAX_AGE_MS,
-  });
+  res.cookie('refreshToken', refreshToken, getRefreshTokenCookieOptions());
   return {
     accessToken,
+    ...(ALLOW_REFRESH_TOKEN_JSON ? { refreshToken } : {}),
     user: { id: user._id, email, role: user.role },
   };
 }
@@ -156,7 +196,11 @@ export const login = async (req: Request<{}, {}, LoginBody>, res: Response): Pro
 export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
     // Читаем refresh token из httpOnly cookie
-    const refreshToken = req.cookies?.refreshToken;
+    const refreshToken =
+      req.cookies?.refreshToken ??
+      (ALLOW_REFRESH_TOKEN_BODY
+        ? (req.body as { refreshToken?: string } | undefined)?.refreshToken
+        : undefined);
 
     if (!refreshToken) {
       res.status(401).json({ error: 'Refresh token отсутствует' });
@@ -221,11 +265,13 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    // Удаляем cookie с refresh token
+    // Удаляем cookie с refresh token (опции должны совпадать с выставлением)
+    const cookieOpts = getRefreshTokenCookieOptions();
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: cookieOpts.secure,
+      sameSite: cookieOpts.sameSite,
+      path: cookieOpts.path,
     });
 
     res.status(200).json({ message: 'Выход выполнен успешно' });
