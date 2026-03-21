@@ -1,9 +1,26 @@
 import rateLimit from 'express-rate-limit';
 
-// Общий rate limiter для всех эндпоинтов
+const DEFAULT_WINDOW_MS = 15 * 60 * 1000;
+const DEFAULT_MAX = 100;
+const DEFAULT_AUTH_MAX = 5;
+
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  if (value === undefined || value === '') return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
+}
+
+const windowMs = parsePositiveInt(
+  process.env.RATE_LIMIT_WINDOW_MS,
+  DEFAULT_WINDOW_MS
+);
+const generalMax = parsePositiveInt(process.env.RATE_LIMIT_MAX, DEFAULT_MAX);
+const authMax = parsePositiveInt(process.env.RATE_LIMIT_AUTH_MAX, DEFAULT_AUTH_MAX);
+
+// Общий rate limiter для всех эндпоинтов (настраивается через RATE_LIMIT_*)
 export const generalRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
-  max: 100, // максимум 100 запросов с одного IP за 15 минут
+  windowMs,
+  max: generalMax,
   message: {
     error: 'Слишком много запросов с этого IP, попробуйте позже',
   },
@@ -17,8 +34,8 @@ export const generalRateLimiter = rateLimit({
 
 // Строгий rate limiter для auth эндпоинтов (защита от brute force)
 export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
-  max: 5, // максимум 5 попыток входа/регистрации с одного IP за 15 минут
+  windowMs,
+  max: authMax,
   message: {
     error: 'Слишком много попыток авторизации. Попробуйте через 15 минут',
   },

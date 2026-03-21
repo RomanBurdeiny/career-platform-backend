@@ -33,6 +33,9 @@
 | `GOOGLE_CLIENT_ID` | Ваш Web Client ID из Google Cloud |
 | `TELEGRAM_BOT_TOKEN` | Токен бота от BotFather |
 | `NODE_ENV` | `production` |
+| `RATE_LIMIT_MAX` | (опционально) Лимит запросов с одного IP за окно; по умолчанию `100`. Увеличьте, если легальный SPA упирается в 429 (фронт кэширует `GET /api/profile`, но много вкладок/аватаров всё ещё считаются). |
+| `RATE_LIMIT_WINDOW_MS` | (опционально) Окно в миллисекундах; по умолчанию `900000` (15 мин). |
+| `RATE_LIMIT_AUTH_MAX` | (опционально) Лимит неуспешных попыток auth за окно; по умолчанию `5`. |
 
 5. **Settings** → **Build**:
    - Build Command: `npm run build`
@@ -70,3 +73,7 @@
 3. **BotFather** — если используете Telegram, домен уже настроен для фронта
 
 4. **Google Cloud Console** — добавьте origin бэкенда в CORS при необходимости (обычно не нужно — CORS настраивается на бэкенде)
+
+5. **Публичные пути веб-приложения (Expo Router / Vercel)** — после авторизации пользователь может открывать прямые ссылки вида `/profile`, `/jobs`, `/jobs/favorites`, `/recommendations`, `/recommendations/:id`. Это только маршруты фронтенда; API по-прежнему `/api/...`. Переменная `CLIENT_URL` должна быть **корнем сайта без завершающего слэша** (например `https://frontend-chi-eight-35.vercel.app`) — так корректно собираются ссылки приглашений `{CLIENT_URL}/register?invite=...`.
+
+6. **GET /api/profile и 429** — актуальный фронтенд кэширует загрузку профиля в Zustand (`profileHydrated`), чтобы не дублировать запрос при каждом заходе на вкладку. Если 429 остаётся, проверьте логи: в лимит входят все маршруты под `/api/*` с одного IP, включая `/api/profile/avatar/file`, jobs, career. При необходимости задайте `RATE_LIMIT_MAX` / `RATE_LIMIT_WINDOW_MS` (см. таблицу выше).
