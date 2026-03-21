@@ -2,6 +2,7 @@
 export enum Direction {
   CREATIVE = 'Creative',
   IT = 'IT',
+  DESIGN = 'Design',
   ECOMMERCE = 'E-commerce',
   HORECA = 'HoReCa',
   ARCHITECTURE_DESIGN = 'Architecture & Design',
