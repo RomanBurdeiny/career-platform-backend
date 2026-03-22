@@ -3,6 +3,21 @@ import Job from '../models/Job';
 import { AuthRequest, CreateJobBody, UpdateJobBody } from '../types';
 import { isMongoDuplicateError, isMongooseValidationError, getErrorMessage } from '../utils/errorHandlers';
 
+/** Поля, разрешённые к обновлению через API (без createdBy и служебных). */
+const JOB_UPDATE_FIELDS = [
+  'title',
+  'description',
+  'company',
+  'direction',
+  'level',
+  'workFormat',
+  'location',
+  'salary',
+  'requirements',
+  'responsibilities',
+  'isActive',
+] as const satisfies readonly (keyof UpdateJobBody)[];
+
 // Создание вакансии (только ADMIN)
 export const createJob = async (req: AuthRequest<{}, {}, CreateJobBody>, res: Response): Promise<void> => {
   try {
@@ -135,19 +150,29 @@ export const updateJob = async (
       return;
     }
 
-    // Валидация выполнена Zod middleware
     const { id } = req.params;
-    const updateData = req.body;
+    const body = req.body as UpdateJobBody & Record<string, unknown>;
+    const $set: Record<string, unknown> = {};
+    for (const key of JOB_UPDATE_FIELDS) {
+      if (body[key] !== undefined) {
+        $set[key] = body[key];
+      }
+    }
 
-    const job = await Job.findById(id);
+    if (Object.keys($set).length === 0) {
+      res.status(400).json({ error: 'Нет полей для обновления' });
+      return;
+    }
+
+    // $set + findByIdAndUpdate: не трогаем createdBy и не вызываем save() на «битом» документе без автора
+    const job = await Job.findByIdAndUpdate(id, { $set }, { new: true, runValidators: true })
+      .populate('createdBy', 'email role')
+      .exec();
+
     if (!job) {
       res.status(404).json({ error: 'Вакансия не найдена' });
       return;
     }
-
-    // Обновляем поля
-    Object.assign(job, updateData);
-    await job.save();
 
     res.status(200).json(job);
   } catch (error: unknown) {
@@ -169,15 +194,16 @@ export const deleteJob = async (req: AuthRequest<{ id: string }>, res: Response)
 
     const { id } = req.params;
 
-    const job = await Job.findById(id);
+    const job = await Job.findByIdAndUpdate(
+      id,
+      { $set: { isActive: false } },
+      { new: true, runValidators: false }
+    ).exec();
+
     if (!job) {
       res.status(404).json({ error: 'Вакансия не найдена' });
       return;
     }
-
-    // Мягкое удаление
-    job.isActive = false;
-    await job.save();
 
     res.status(200).json({
       message: 'Вакансия успешно деактивирована',

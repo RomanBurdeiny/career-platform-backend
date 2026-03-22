@@ -18,7 +18,7 @@ export interface IJob extends Document {
   };
   requirements: string[];
   responsibilities: string[];
-  createdBy: Types.ObjectId;
+  createdBy?: Types.ObjectId | null;
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;

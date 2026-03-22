@@ -66,10 +66,11 @@ const jobSchema = new Schema<IJob>({
       message: 'Должна быть хотя бы одна обязанность',
     },
   },
+  // Вакансии из сидов/ручного insert могут быть без автора — без default, только optional
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
   },
   isActive: {
     type: Boolean,
