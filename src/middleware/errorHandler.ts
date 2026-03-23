@@ -8,6 +8,12 @@ import {
   formatZodError,
 } from '../utils/errorHandlers';
 
+function prefersEnglish(req: Request): boolean {
+  const raw = req.headers['accept-language'];
+  const h = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : '';
+  return h.toLowerCase().trim().startsWith('en');
+}
+
 // Глобальный обработчик ошибок Express
 export const errorHandler = (
   err: unknown,
@@ -18,8 +24,9 @@ export const errorHandler = (
   // Zod ошибки валидации
   if (err instanceof ZodError) {
     const errors = formatZodError(err);
+    const en = prefersEnglish(req);
     res.status(400).json({
-      error: 'Ошибка валидации',
+      error: en ? 'Validation error' : 'Ошибка валидации',
       details: errors,
     });
     return;
