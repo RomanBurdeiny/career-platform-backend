@@ -78,7 +78,14 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
     if (direction) filters.direction = direction;
     if (level) filters.level = level;
     if (workFormat) filters.workFormat = workFormat;
-    if (location) filters.location = location;
+
+    const locationTerm = typeof location === 'string' ? location.trim() : '';
+    if (locationTerm) {
+      filters.location = {
+        $regex: escapeRegex(locationTerm),
+        $options: 'i',
+      };
+    }
 
     // Поиск по подстроке (регистронезависимый) в title, description, company
     const searchTerm = typeof search === 'string' ? search.trim() : '';
