@@ -1,10 +1,15 @@
 import { z } from 'zod';
-import { Direction, Level, CareerGoal } from '../types';
+import { Direction, Level, CareerGoal, City, EmploymentType, ProfileLang } from '../types';
 
 // Массивы значений enum для валидации
 const directionValues = Object.values(Direction) as [string, ...string[]];
 const levelValues = Object.values(Level) as [string, ...string[]];
 const careerGoalValues = Object.values(CareerGoal) as [string, ...string[]];
+const cityValues = Object.values(City) as [string, ...string[]];
+const employmentTypeValues = Object.values(EmploymentType) as [string, ...string[]];
+const profileLangValues = Object.values(ProfileLang) as [string, ...string[]];
+
+const optionalDateNullable = z.union([z.coerce.date(), z.null()]).optional();
 
 // Схема создания профиля
 export const createProfileSchema = z.object({
@@ -38,6 +43,23 @@ export const createProfileSchema = z.object({
     careerGoal: z.enum(careerGoalValues, {
       message: `Неверная карьерная цель. Допустимые значения: ${careerGoalValues.join(', ')}`,
     }),
+    careerStartDate: optionalDateNullable,
+    currentCompany: z
+      .string()
+      .max(255, 'Компания не длиннее 255 символов')
+      .trim()
+      .optional()
+      .nullable(),
+    city: z.enum(cityValues, {
+      message: `Неверный город. Допустимые значения: ${cityValues.join(', ')}`,
+    }).optional().nullable(),
+    employmentType: z.enum(employmentTypeValues, {
+      message: `Неверный тип занятости. Допустимые значения: ${employmentTypeValues.join(', ')}`,
+    }).optional().nullable(),
+    lang: z.enum(profileLangValues, {
+      message: `Неверный язык. Допустимые значения: ${profileLangValues.join(', ')}`,
+    }).optional(),
+    wantsRelocation: z.boolean().optional(),
   }),
 });
 
@@ -76,6 +98,23 @@ export const updateProfileSchema = z.object({
     careerGoal: z.enum(careerGoalValues, {
       message: `Неверная карьерная цель. Допустимые значения: ${careerGoalValues.join(', ')}`,
     }).optional(),
+    careerStartDate: optionalDateNullable,
+    currentCompany: z
+      .string()
+      .max(255, 'Компания не длиннее 255 символов')
+      .trim()
+      .optional()
+      .nullable(),
+    city: z.enum(cityValues, {
+      message: `Неверный город. Допустимые значения: ${cityValues.join(', ')}`,
+    }).optional().nullable(),
+    employmentType: z.enum(employmentTypeValues, {
+      message: `Неверный тип занятости. Допустимые значения: ${employmentTypeValues.join(', ')}`,
+    }).optional().nullable(),
+    lang: z.enum(profileLangValues, {
+      message: `Неверный язык. Допустимые значения: ${profileLangValues.join(', ')}`,
+    }).optional(),
+    wantsRelocation: z.boolean().optional(),
   }).refine(data => Object.keys(data).length > 0, {
     message: 'Необходимо указать хотя бы одно поле для обновления',
   }),

@@ -23,3 +23,27 @@ export enum CareerGoal {
   LEADERSHIP = 'Leadership',
   EXPERTISE = 'Expertise',
 }
+
+/** Город / регион (Казахстан и зарубеж) */
+export enum City {
+  ALMATY = 'almaty',
+  ASTANA = 'astana',
+  SHYMKENT = 'shymkent',
+  OTHER_KZ = 'other_kz',
+  ABROAD = 'abroad',
+}
+
+/** Тип занятости */
+export enum EmploymentType {
+  FULLTIME = 'fulltime',
+  FREELANCE = 'freelance',
+  BUSINESS = 'business',
+  SEARCHING = 'searching',
+  RESKILLING = 'reskilling',
+}
+
+/** Язык интерфейса профиля */
+export enum ProfileLang {
+  RU = 'ru',
+  EN = 'en',
+}

@@ -7,4 +7,6 @@ export * from './job';
 export * from './jobEnums';
 export * from './career';
 export * from './careerEnums';
+export * from './careerTrigger';
+export * from './careerRoadmap';
 export * from './invite';

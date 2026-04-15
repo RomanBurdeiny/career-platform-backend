@@ -14,7 +14,21 @@ export const create = async (req: AuthRequest<{}, {}, CreateProfileBody>, res: R
 
     // Валидация выполнена Zod middleware
     const userId = req.user.userId;
-    const { name, avatar, direction, level, skills, experience, careerGoal } = req.body;
+    const {
+      name,
+      avatar,
+      direction,
+      level,
+      skills,
+      experience,
+      careerGoal,
+      careerStartDate,
+      currentCompany,
+      city,
+      employmentType,
+      lang,
+      wantsRelocation,
+    } = req.body;
 
     const existingProfile = await Profile.findOne({ userId });
     if (existingProfile) {
@@ -31,6 +45,12 @@ export const create = async (req: AuthRequest<{}, {}, CreateProfileBody>, res: R
       skills,
       experience,
       careerGoal,
+      careerStartDate,
+      currentCompany,
+      city,
+      employmentType,
+      lang,
+      wantsRelocation,
     });
 
     res.status(201).json(profile);
@@ -79,7 +99,21 @@ export const update = async (req: AuthRequest<{}, {}, UpdateProfileBody>, res: R
 
     // Валидация выполнена Zod middleware
     const userId = req.user.userId;
-    const { name, avatar, direction, level, skills, experience, careerGoal } = req.body;
+    const {
+      name,
+      avatar,
+      direction,
+      level,
+      skills,
+      experience,
+      careerGoal,
+      careerStartDate,
+      currentCompany,
+      city,
+      employmentType,
+      lang,
+      wantsRelocation,
+    } = req.body;
 
     const profile = await Profile.findOne({ userId });
     if (!profile) {
@@ -94,6 +128,12 @@ export const update = async (req: AuthRequest<{}, {}, UpdateProfileBody>, res: R
     if (skills !== undefined) profile.skills = skills;
     if (experience !== undefined) profile.experience = experience;
     if (careerGoal !== undefined) profile.careerGoal = careerGoal;
+    if (careerStartDate !== undefined) profile.careerStartDate = careerStartDate;
+    if (currentCompany !== undefined) profile.currentCompany = currentCompany;
+    if (city !== undefined) profile.city = city;
+    if (employmentType !== undefined) profile.employmentType = employmentType;
+    if (lang !== undefined) profile.lang = lang;
+    if (wantsRelocation !== undefined) profile.wantsRelocation = wantsRelocation;
 
     await profile.save();
 

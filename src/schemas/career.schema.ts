@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { objectIdSchema } from './common.schema';
-import { Direction, Level, ActionType } from '../types';
+import { Direction, Level, ActionType, RoadmapBranchType } from '../types';
 
 export const scenarioIdParamsSchema = z.object({
   params: z.object({
@@ -68,3 +68,116 @@ export const updateCareerScenarioSchema = z.object({
 // Экспорт типов
 export type CreateCareerScenarioInput = z.infer<typeof createCareerScenarioSchema>;
 export type UpdateCareerScenarioInput = z.infer<typeof updateCareerScenarioSchema>;
+
+const branchTypeValues = Object.values(RoadmapBranchType) as [string, ...string[]];
+
+const skillsToDevelopSchema = z
+  .array(z.string().trim().min(1, 'Пустой навык недопустим'))
+  .min(1, 'Нужен хотя бы один навык в skillsToDevelop')
+  .max(100);
+
+const roadmapCareerBranchesSchema = z
+  .array(z.string().trim().min(1))
+  .max(50)
+  .optional();
+
+export const roadmapIdParamsSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+});
+
+export const createCareerRoadmapSchema = z.object({
+  body: z
+    .object({
+      direction: z.enum(directionValues, {
+        message: `Направление должно быть одним из: ${directionValues.join(', ')}`,
+      }),
+      fromLevel: z.enum(levelValues, {
+        message: `Уровень должен быть одним из: ${levelValues.join(', ')}`,
+      }),
+      toLevel: z.enum(levelValues, {
+        message: `Целевой уровень должен быть одним из: ${levelValues.join(', ')}`,
+      }),
+      toRole: z.string().min(1).max(255),
+      skillsToDevelop: skillsToDevelopSchema,
+      estimatedTimeMonths: z.number().int().min(1),
+      estimatedTimeMonthsMax: z.number().int().min(1).optional().nullable(),
+      branchType: z.enum(branchTypeValues, {
+        message: `branchType: ${branchTypeValues.join(', ')}`,
+      }),
+      careerBranches: roadmapCareerBranchesSchema,
+      sortOrder: z.number().int().min(0).optional(),
+      isActive: z.boolean().optional(),
+    })
+    .refine(
+      (b) => b.estimatedTimeMonthsMax == null || b.estimatedTimeMonthsMax >= b.estimatedTimeMonths,
+      { message: 'estimatedTimeMonthsMax должен быть ≥ estimatedTimeMonths', path: ['estimatedTimeMonthsMax'] }
+    ),
+});
+
+export const updateCareerRoadmapSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+  body: z
+    .object({
+      direction: z.enum(directionValues).optional(),
+      fromLevel: z.enum(levelValues).optional(),
+      toLevel: z.enum(levelValues).optional(),
+      toRole: z.string().min(1).max(255).optional(),
+      skillsToDevelop: skillsToDevelopSchema.optional(),
+      estimatedTimeMonths: z.number().int().min(1).optional(),
+      estimatedTimeMonthsMax: z.number().int().min(1).optional().nullable(),
+      branchType: z.enum(branchTypeValues).optional(),
+      careerBranches: roadmapCareerBranchesSchema,
+      sortOrder: z.number().int().min(0).optional(),
+      isActive: z.boolean().optional(),
+    })
+    .refine((b) => Object.keys(b).length > 0, { message: 'Укажите хотя бы одно поле' })
+    .refine(
+      (b) =>
+        b.estimatedTimeMonthsMax == null ||
+        b.estimatedTimeMonths == null ||
+        b.estimatedTimeMonthsMax >= b.estimatedTimeMonths,
+      { message: 'estimatedTimeMonthsMax должен быть ≥ estimatedTimeMonths', path: ['estimatedTimeMonthsMax'] }
+    ),
+});
+
+const learningTagsSchema = z
+  .array(z.string().trim().min(1, 'Пустой тег недопустим'))
+  .min(1, 'Нужен хотя бы один тег')
+  .max(50);
+
+export const learningResourceIdParamsSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+});
+
+export const createLearningResourceSchema = z.object({
+  body: z.object({
+    title: z.string().min(1).trim(),
+    description: z.string().trim().optional().nullable(),
+    url: z.union([z.literal(''), z.string().url()]).optional().nullable(),
+    tags: learningTagsSchema,
+    sortOrder: z.number().int().min(0).optional(),
+    isActive: z.boolean().optional(),
+  }),
+});
+
+export const updateLearningResourceSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+  body: z
+    .object({
+      title: z.string().min(1).trim().optional(),
+      description: z.string().trim().optional().nullable(),
+      url: z.union([z.literal(''), z.string().url()]).optional().nullable(),
+      tags: learningTagsSchema.optional(),
+      sortOrder: z.number().int().min(0).optional(),
+      isActive: z.boolean().optional(),
+    })
+    .refine((b) => Object.keys(b).length > 0, { message: 'Укажите хотя бы одно поле' }),
+});

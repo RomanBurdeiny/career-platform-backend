@@ -11,7 +11,12 @@ import bcrypt from 'bcrypt';
 import User from '../src/models/User';
 import Job from '../src/models/Job';
 import CareerScenario from '../src/models/CareerScenario';
+import CareerTrigger from '../src/models/CareerTrigger';
+import CareerRoadmap from '../src/models/CareerRoadmap';
+import LearningResource from '../src/models/LearningResource';
 import { Direction, Level } from '../src/types/profileEnums';
+import { CareerTriggerCta, CareerTriggerSpecialCase } from '../src/types/careerTrigger';
+import { RoadmapBranchType } from '../src/types/careerRoadmap';
 import { WorkFormat } from '../src/types/jobEnums';
 import { ActionType } from '../src/types/careerEnums';
 import { UserRole } from '../src/types/auth';
@@ -265,6 +270,297 @@ async function seed() {
     console.log('Создано 5 карьерных сценариев');
   } else {
     console.log(`Карьерные сценарии уже есть (${scenariosCount} шт.)`);
+  }
+
+  // Карьерные триггеры «Пора расти» (GET /api/career/trigger)
+  const triggersCount = await CareerTrigger.countDocuments();
+  if (triggersCount === 0) {
+    await CareerTrigger.insertMany([
+      {
+        direction: null,
+        currentLevel: null,
+        minYears: null,
+        triggerTitle: 'Трек 40+',
+        triggerDescription:
+          'Вы указали переквалификацию — подключите программу развития 40+ и соберите персональный план перехода.',
+        nextSteps: [
+          {
+            title: 'Пройти вводную диагностику',
+            description: 'Оценка текущих компетенций и целевого направления.',
+          },
+          {
+            title: 'Собрать учебный маршрут',
+            description: 'Курсы и практика под выбранную роль.',
+          },
+          {
+            title: 'Закрепить результат на рынке',
+            description: 'Резюме, портфолио и сопровождение до оффера.',
+          },
+        ],
+        ctaType: CareerTriggerCta.COURSES,
+        specialCase: CareerTriggerSpecialCase.RESKILLING_TRACK_40,
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        direction: null,
+        currentLevel: null,
+        minYears: null,
+        triggerTitle: 'Трек переквалификации',
+        triggerDescription:
+          'Карьерная цель «Смена карьеры» — откройте сценарий переквалификации и следующие шаги.',
+        nextSteps: [
+          {
+            title: 'Сузить новое направление',
+            description: '1–2 роли, которые совпадают с вашим бэкграундом.',
+          },
+          {
+            title: 'Закрыть пробелы навыков',
+            description: 'Минимальный набор для первого оффера в новой сфере.',
+          },
+          {
+            title: 'Собрать доказательства компетенции',
+            description: 'Пет-проекты, сертификаты, менторство.',
+          },
+        ],
+        ctaType: CareerTriggerCta.CONSULTATION,
+        specialCase: CareerTriggerSpecialCase.CAREER_CHANGE_RETRAINING,
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        direction: null,
+        currentLevel: Level.JUNIOR,
+        minYears: 1,
+        triggerTitle: 'Вы больше года на Junior',
+        triggerDescription:
+          'Пора усилить трек к Middle: углубите экспертизу и возьмите задачи уровня выше текущего грейда.',
+        nextSteps: [
+          {
+            title: 'Расширить зону ответственности',
+            description: 'Code review, фичи end-to-end, онбординг коллег.',
+          },
+          {
+            title: 'Углубить системные навыки',
+            description: 'Архитектура, качество, наблюдаемость — по вашему стеку.',
+          },
+          {
+            title: 'Зафиксировать рост для ревью',
+            description: 'Метрики, кейсы, обратная связь лида.',
+          },
+        ],
+        ctaType: CareerTriggerCta.ROADMAP,
+        sortOrder: 10,
+        isActive: true,
+      },
+      {
+        direction: null,
+        currentLevel: Level.JUNIOR,
+        minYears: 1.5,
+        triggerTitle: 'Вы уже готовы к Middle',
+        triggerDescription:
+          'Стаж и задачи тянут на следующий грейд — обсудите переход с руководителем и зафиксируйте критерии Middle.',
+        nextSteps: [
+          {
+            title: 'Согласовать ожидания Middle',
+            description: 'Список компетенций и примеры задач уровня Middle.',
+          },
+          {
+            title: 'Взять менторство или сложный проект',
+            description: 'Показать самостоятельность и влияние на результат.',
+          },
+          {
+            title: 'Подготовиться к performance review',
+            description: 'Досье достижений и план на полгода.',
+          },
+        ],
+        ctaType: CareerTriggerCta.CONSULTATION,
+        sortOrder: 11,
+        isActive: true,
+      },
+      {
+        direction: null,
+        currentLevel: Level.MIDDLE,
+        minYears: 2,
+        triggerTitle: 'Два года на Middle',
+        triggerDescription:
+          'Хороший момент планировать рост: экспертиза, архитектура или люди — выберите вектор на ближайший год.',
+        nextSteps: [
+          {
+            title: 'Усилить экспертный столб',
+            description: 'Глубина в домене или технологии, узнаваемость в команде.',
+          },
+          {
+            title: 'Пробовать системное влияние',
+            description: 'Дизайн решений, кросс-командные инициативы.',
+          },
+          {
+            title: 'Собрать план к Senior',
+            description: 'Критерии и сроки с руководителем.',
+          },
+        ],
+        ctaType: CareerTriggerCta.ROADMAP,
+        sortOrder: 20,
+        isActive: true,
+      },
+      {
+        direction: null,
+        currentLevel: Level.MIDDLE,
+        minYears: 2.5,
+        triggerTitle: 'Пора думать о Senior',
+        triggerDescription:
+          'Стаж на Middle позволяет целиться в Senior — определите, чем вы будете «незаменимы» на следующем уровне.',
+        nextSteps: [
+          {
+            title: 'Масштаб влияния',
+            description: 'Продукт, команда или техническая платформа.',
+          },
+          {
+            title: 'Лидерство без титула',
+            description: 'Инициативы, наставничество, качество поставки.',
+          },
+          {
+            title: 'Внешняя видимость',
+            description: 'Митапы, статьи, открытые проекты.',
+          },
+        ],
+        ctaType: CareerTriggerCta.CONSULTATION,
+        sortOrder: 21,
+        isActive: true,
+      },
+      {
+        direction: null,
+        currentLevel: Level.SENIOR,
+        minYears: 3,
+        triggerTitle: 'Lead или своё направление?',
+        triggerDescription:
+          'Три года на Senior — логичная развилка: управление людьми, архитектура или собственный продукт/бизнес.',
+        nextSteps: [
+          {
+            title: 'Путь Engineering / Team Lead',
+            description: 'Люди, процессы, найм и развитие команды.',
+          },
+          {
+            title: 'Путь главного эксперта',
+            description: 'Staff/Principal: стандарты, стратегия технологий.',
+          },
+          {
+            title: 'Путь предпринимательства',
+            description: 'Консалтинг, студия, продукт — проверка гипотез.',
+          },
+        ],
+        ctaType: CareerTriggerCta.ROADMAP,
+        sortOrder: 30,
+        isActive: true,
+      },
+    ]);
+    console.log('Созданы карьерные триггеры (7 шт.)');
+  } else {
+    console.log(`Карьерные триггеры уже есть (${triggersCount} шт.)`);
+  }
+
+  // Learning resources (связь с картами через tags ↔ skillsToDevelop после normalizeSkillTag)
+  const lrCount = await LearningResource.countDocuments();
+  if (lrCount === 0) {
+    await LearningResource.insertMany([
+      {
+        title: 'UX Research: от интервью до инсайтов',
+        description: 'Практический гайд по исследованиям для дизайнеров.',
+        url: 'https://example.com/learn/ux-research',
+        tags: ['ux research'],
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        title: 'Design Systems в Figma',
+        description: 'Токены, компоненты, документация для команды.',
+        url: 'https://example.com/learn/design-systems',
+        tags: ['design systems'],
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        title: 'Figma Advanced: автолейауты и прототипы',
+        description: 'Углублённая работа с компонентами и вариантами.',
+        url: 'https://example.com/learn/figma-advanced',
+        tags: ['figma advanced'],
+        sortOrder: 2,
+        isActive: true,
+      },
+      {
+        title: 'Презентации для стейкхолдеров',
+        description: 'Структура, сторителлинг, защита дизайн-решений.',
+        url: 'https://example.com/learn/presentation-skills',
+        tags: ['presentation skills'],
+        sortOrder: 3,
+        isActive: true,
+      },
+      {
+        title: 'Работа со стейкхолдерами',
+        description: 'Согласования, приоритеты, управление ожиданиями.',
+        url: 'https://example.com/learn/stakeholders',
+        tags: ['stakeholder management'],
+        sortOrder: 4,
+        isActive: true,
+      },
+      {
+        title: 'Фасилитация дизайн-сессий',
+        description: 'Воркшопы, ретро, кросс-функциональные встречи.',
+        url: 'https://example.com/learn/facilitation',
+        tags: ['team facilitation'],
+        sortOrder: 5,
+        isActive: true,
+      },
+    ]);
+    console.log('Созданы обучающие ресурсы (6 шт.)');
+  } else {
+    console.log(`Обучающие ресурсы уже есть (${lrCount} шт.)`);
+  }
+
+  // Карты развития (пример из ТЗ: Design + Middle → Senior)
+  const rmCount = await CareerRoadmap.countDocuments();
+  if (rmCount === 0) {
+    await CareerRoadmap.insertMany([
+      {
+        direction: Direction.DESIGN,
+        fromLevel: Level.MIDDLE,
+        toLevel: Level.SENIOR,
+        toRole: 'Senior Designer',
+        skillsToDevelop: [
+          'UX Research',
+          'Design Systems',
+          'Figma Advanced',
+          'Presentation Skills',
+        ],
+        estimatedTimeMonths: 12,
+        estimatedTimeMonthsMax: 18,
+        branchType: RoadmapBranchType.TECHNICAL,
+        careerBranches: ['Art Director', 'Product Designer', 'UX Lead'],
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        direction: Direction.DESIGN,
+        fromLevel: Level.MIDDLE,
+        toLevel: Level.SENIOR,
+        toRole: 'Senior Designer (управленческий трек)',
+        skillsToDevelop: [
+          'UX Research',
+          'Presentation Skills',
+          'Stakeholder Management',
+          'Team Facilitation',
+        ],
+        estimatedTimeMonths: 15,
+        estimatedTimeMonthsMax: 24,
+        branchType: RoadmapBranchType.MANAGEMENT,
+        careerBranches: ['Design Manager', 'Head of Design'],
+        sortOrder: 1,
+        isActive: true,
+      },
+    ]);
+    console.log('Созданы карты развития (2 шт., Design Middle)');
+  } else {
+    console.log(`Карты развития уже есть (${rmCount} шт.)`);
   }
 
   console.log('Seed завершён успешно');
